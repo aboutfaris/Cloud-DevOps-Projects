@@ -22,7 +22,7 @@
 - [x]  Programmatic access and AWS configured with CLI.
 - [x]  Python3 Installed.
 - [x]  Docker and Kubectl installed.
-- [x]  Code editor (Vscode)
+- [x]  Code IDE (PyCharm)
 
 
 ## **Part 1: Deploying the Flask application locally**
