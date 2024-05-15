@@ -14,9 +14,7 @@
 6. Create Kubernetes Deployments and Services using Python!
 
 
-## **Prerequisites** !
-
-(Things to have before starting the projects)
+## **Prerequisites** 
 
 - [x]  AWS Account.
 - [x]  Programmatic access and AWS configured with CLI.
