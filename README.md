@@ -215,3 +215,4 @@ Once your pod is up and running, run the port-forward to expose the service
 ```bash
 kubectl port-forward service/<service_name> 5000:5000
 ```
+![image](https://github.com/FarisDou/AWS-K8S-Docker-Flask-Cloud-App/assets/109401839/91bc52c4-cbe9-4593-8765-3a3884a12d5b)
