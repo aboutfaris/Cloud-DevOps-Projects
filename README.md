@@ -206,6 +206,10 @@ make sure to edit the name of the image on line 25 with your image Uri.
 - Once you run this file by running “python3 eks.py” deployment and service will be created.
 - Check by running following commands:
 
+```eksctl get cluster```
+
+Install eks
+
 ```jsx
 kubectl get deployment -n default (check deployments)
 kubectl get service -n default (check service)
