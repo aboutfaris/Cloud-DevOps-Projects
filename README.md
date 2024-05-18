@@ -87,16 +87,7 @@ CMD ["flask", "run"]
 To build the Docker image, execute the following command:
 
 ```
- docker build -t <aws_repository>:latest ./DockerFile
-```
-
-At this point, if there is an error "Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg", I ran the following script to resolve this issue. 
-
-```
-#!/bin/sh
-[ -e /etc/containers/nodocker ] || \
-echo "Emulate Docker CLI using podman. Create /etc/containers/nodocker to quiet msg." >&2
-exec podman "$@"
+ docker build -t <aws_repository>:latest <directory>/DockerFile
 ```
 
 From: https://podman-desktop.io/docs/migrating-from-docker/emulating-docker-cli-with-podman
