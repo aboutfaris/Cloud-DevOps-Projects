@@ -1,378 +1,249 @@
-# **AWS-K8S-Docker-Flask-Cloud-App**
+# AWS K8S Docker Flask Cloud App
 
-## Goals
+Build a Python system-monitoring app with Flask and psutil, containerize it with Docker, push the image to Amazon ECR, and run it on an Amazon EKS cluster using the Kubernetes Python client.
 
-1. Python and How to create Monitoring Application in Python using Flask and psutil
-2. How to run a Python App locally.
-3. Learn Docker and How to containerize a Python application
-    1. Creating Dockerfile
-    2. Building DockerImage
-    3. Running Docker Container
-    4. Docker Commands
-4. Create ECR repository using Python Boto3 and pushing Docker Image to ECR
-5. Learn Kubernetes and Create EKS cluster and Nodegroups
-6. Create Kubernetes Deployments and Services using Python!
+## What you'll use
 
+- Python 3 with Flask, psutil, Plotly, and boto3 (see `requirements.txt`)
+- Docker
+- AWS ECR and EKS, the AWS CLI, `kubectl`, and `eksctl`
+- The Kubernetes Python client
+- A code editor (I used PyCharm)
 
-## **Prerequisites** 
+## Prerequisites
 
-- [x]  AWS Account.
-- [x]  Programmatic access and AWS configured with CLI.
-- [x]  Python3 Installed.
-- [x]  Docker and Kubectl installed.
-- [x]  Code IDE (PyCharm)
+- An AWS account with programmatic access, and the AWS CLI configured
+- Python 3, Docker, and `kubectl` installed
 
+## Steps
 
-## **Part 1: Deploying the Flask application locally**
+### Part 1: Run the Flask app locally
 
-### **Step 1: Clone the code**
+1. Clone the repository:
 
-Clone the code from the repository:
+   ```bash
+   git clone <repository_url>
+   ```
 
-```
-git clone <repository_url>
-```
+2. Install the dependencies:
 
-### **Step 2: Install dependencies**
+   ```bash
+   pip3 install -r requirements.txt
+   ```
 
-The application uses the **`psutil`** and **`Flask`, Plotly, boto3** libraries. Install them using pip:
+3. From the project root, start the app:
 
-```
-pip3 install -r requirements.txt
-```
+   ```bash
+   python3 app.py
+   ```
 
-### **Step 3: Run the application**
+4. Open http://localhost:5000/ in a browser.
 
-To run the application, navigate to the root directory of the project and execute the following command:
+   Expected result: a "System Monitoring" page with two gauges (0 to 100), CPU Utilization and Memory Utilization, each showing the current percentage (for example, CPU around 12 and memory around 71).
 
-```
-python3 app.py
-```
+### Part 2: Containerize the app
 
-This will start the Flask server on **`localhost:5000`**. Navigate to [http://localhost:5000/](http://localhost:5000/) on your browser to access the application.
+5. Create a `Dockerfile` in the project root (this repo's copy is `DockerFile`):
 
-## **Part 2: Dockerizing the Flask application**
+   ```dockerfile
+   # Use the official Python image as the base image
+   FROM python:3.9-slim-buster
 
-### **Step 1: Create a Dockerfile**
+   # Set the working directory in the container
+   WORKDIR /app
 
-Create a **`Dockerfile`** in the root directory of the project with the following contents:
+   # Copy the requirements file to the working directory
+   COPY requirements.txt .
 
-```
-# Use the official Python image as the base image
-FROM python:3.9-slim-buster
+   RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Set the working directory in the container
-WORKDIR /app
+   # Copy the application code to the working directory
+   COPY . .
 
-# Copy the requirements file to the working directory
-COPY requirements.txt .
+   # Set the environment variables for the Flask app
+   ENV FLASK_RUN_HOST=0.0.0.0
 
-RUN pip3 install --no-cache-dir -r requirements.txt
+   # Expose the port on which the Flask app will run
+   EXPOSE 5000
 
-# Copy the application code to the working directory
-COPY . .
+   # Start the Flask app when the container is run
+   CMD ["flask", "run"]
+   ```
 
-# Set the environment variables for the Flask app
-ENV FLASK_RUN_HOST=0.0.0.0
+6. Build the image:
 
-# Expose the port on which the Flask app will run
-EXPOSE 5000
+   ```bash
+   docker build -t <aws_repository>:latest <directory>/DockerFile
+   ```
 
-# Start the Flask app when the container is run
-CMD ["flask", "run"]
-```
+   If you use Podman instead of Docker, see [Emulating the Docker CLI with Podman](https://podman-desktop.io/docs/migrating-from-docker/emulating-docker-cli-with-podman).
 
-### **Step 2: Build the Docker image**
+7. Run the container:
 
-To build the Docker image, execute the following command:
+   ```bash
+   docker run -p 5000:5000 <image_name>
+   ```
 
-```
- docker build -t <aws_repository>:latest <directory>/DockerFile
-```
+   Expected result: the same monitoring page loads at http://localhost:5000/, now served from the container.
 
-From: https://podman-desktop.io/docs/migrating-from-docker/emulating-docker-cli-with-podman
+### Part 3: Push the image to ECR
 
-### **Step 3: Run the Docker container**
+8. Create an ECR repository with boto3 (see `ecr.py`):
 
-To run the Docker container, execute the following command:
+   ```python
+   import boto3
 
-```
-docker run -p 5000:5000 <image_name>
-```
+   # Create an ECR client
+   ecr_client = boto3.client('ecr')
 
-This will start the Flask server in a Docker container on **`localhost:5000`**. Navigate to [http://localhost:5000/](http://localhost:5000/) on your browser to access the application.
+   # Create a new ECR repository
+   repository_name = 'my-ecr-repo'
+   response = ecr_client.create_repository(repositoryName=repository_name)
 
-## **Part 3: Pushing the Docker image to ECR**
+   # Print the repository URI
+   repository_uri = response['repository']['repositoryUri']
+   print(repository_uri)
+   ```
 
-### **Step 1: Create an ECR repository**
+9. In the ECR console, open the repository, select View push commands, and run them. The last one pushes the image:
 
-Create an ECR repository using Python:
+   ```bash
+   docker push <ecr_repo_uri>:<tag>
+   ```
 
-```
-import boto3
+### Part 4: Create the EKS cluster
 
-# Create an ECR client
-ecr_client = boto3.client('ecr')
+10. In the AWS console, search for EKS and open Elastic Kubernetes Service.
+11. Select Add cluster > Create and name the cluster `cloud-native-cluster`.
+12. Create a cluster service role: open IAM > Roles > Create role, choose AWS service as the trusted entity, choose EKS as the service, and pick the EKS - Cluster use case. Name it (for example, `myAmazonEKSRole`).
+13. Back on the EKS page, refresh the Cluster service role list, select your role, keep the other defaults, and select Next.
+14. Under networking, select your default VPC, subnets, and security groups. Remove any private subnets you created, and make sure the security group allows port 5000.
+15. Keep the remaining defaults, then review and create the cluster. Creation takes about 10 to 15 minutes.
 
-# Create a new ECR repository
-repository_name = 'my-ecr-repo'
-response = ecr_client.create_repository(repositoryName=repository_name)
+### Part 5: Add a node group
 
-# Print the repository URI
-repository_uri = response['repository']['repositoryUri']
-print(repository_uri)
-```
+16. When the cluster is Active, open its Compute tab and select Add node group. Enter a node group name and a node IAM role.
+17. Create the node IAM role the same way as the cluster role, then edit its trust relationship to the JSON below, or the role will not appear in the list:
 
-### **Step 2: Push the Docker image to ECR**
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "ec2.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole",
+                "Condition": {}
+            }
+        ]
+    }
+    ```
 
-Push the Docker image to ECR using the push commands on the console:
+18. Refresh the role list, select the role, keep the defaults, and select Next.
+19. Under compute and scaling, choose `t2.micro` as the instance type, keep the defaults, and create the node group.
 
-```
-docker push <ecr_repo_uri>:<tag>
-```
+### Part 6: Deploy with Python
 
-## **Part 4: Creating an EKS cluster and deploying the app using Python**
+20. Create `eks.py` in the project directory. Replace `<Your-Image-URI>` with the ECR image URI you pushed, in the form `<your-aws-account-id>.dkr.ecr.us-east-1.amazonaws.com/my-cloud-native-repo:latest`:
 
-### **Step 1: Create an EKS cluster**
+    ```python
+    # create deployment and service
+    from kubernetes import client, config
 
-Create an EKS cluster and add node group
+    # Load Kubernetes configuration
+    config.load_kube_config()
 
-### **Step 2: Create a node group**
+    # Create a Kubernetes API client
+    api_client = client.ApiClient()
 
-Create a node group in the EKS cluster.
-
-### **Step 3: Create deployment and service**
-
-```jsx
-from kubernetes import client, config
-
-# Load Kubernetes configuration
-config.load_kube_config()
-
-# Create a Kubernetes API client
-api_client = client.ApiClient()
-
-# Define the deployment
-deployment = client.V1Deployment(
-    metadata=client.V1ObjectMeta(name="my-flask-app"),
-    spec=client.V1DeploymentSpec(
-        replicas=1,
-        selector=client.V1LabelSelector(
-            match_labels={"app": "my-flask-app"}
-        ),
-        template=client.V1PodTemplateSpec(
-            metadata=client.V1ObjectMeta(
-                labels={"app": "my-flask-app"}
+    # Define the deployment
+    deployment = client.V1Deployment(
+        metadata=client.V1ObjectMeta(name="my-flask-app"),
+        spec=client.V1DeploymentSpec(
+            replicas=1,
+            selector=client.V1LabelSelector(
+                match_labels={"app": "my-flask-app"}
             ),
-            spec=client.V1PodSpec(
-                containers=[
-                    client.V1Container(
-                        name="my-flask-container",
-                        image="<your-aws-account-id>.dkr.ecr.us-east-1.amazonaws.com/my-cloud-native-repo:latest",
-                        ports=[client.V1ContainerPort(container_port=5000)]
-                    )
-                ]
+            template=client.V1PodTemplateSpec(
+                metadata=client.V1ObjectMeta(
+                    labels={"app": "my-flask-app"}
+                ),
+                spec=client.V1PodSpec(
+                    containers=[
+                        client.V1Container(
+                            name="my-flask-container",
+                            image="<Your-Image-URI>",
+                            ports=[client.V1ContainerPort(container_port=5000)]
+                        )
+                    ]
+                )
             )
         )
     )
-)
 
-# Create the deployment
-api_instance = client.AppsV1Api(api_client)
-api_instance.create_namespaced_deployment(
-    namespace="default",
-    body=deployment
-)
-
-# Define the service
-service = client.V1Service(
-    metadata=client.V1ObjectMeta(name="my-flask-service"),
-    spec=client.V1ServiceSpec(
-        selector={"app": "my-flask-app"},
-        ports=[client.V1ServicePort(port=5000)]
+    # Create the deployment
+    api_instance = client.AppsV1Api(api_client)
+    api_instance.create_namespaced_deployment(
+        namespace="default",
+        body=deployment
     )
-)
 
-# Create the service
-api_instance = client.CoreV1Api(api_client)
-api_instance.create_namespaced_service(
-    namespace="default",
-    body=service
-)
-```
+    # Define the service
+    service = client.V1Service(
+        metadata=client.V1ObjectMeta(name="my-flask-service"),
+        spec=client.V1ServiceSpec(
+            selector={"app": "my-flask-app"},
+            ports=[client.V1ServicePort(port=5000)]
+        )
+    )
 
-make sure to edit the name of the image on line 25 with your image Uri.
+    # Create the service
+    api_instance = client.CoreV1Api(api_client)
+    api_instance.create_namespaced_service(
+        namespace="default",
+        body=service
+    )
+    ```
 
-- Once you run this file by running “python3 eks.py” deployment and service will be created.
-- Check by running following commands:
+21. Point `kubectl` at the cluster:
 
-```eksctl get cluster```
+    ```bash
+    aws eks update-kubeconfig --name cloud-native-cluster
+    ```
 
-Install eks
+22. Create the deployment and service:
 
-```jsx
-kubectl get deployment -n default (check deployments)
-kubectl get service -n default (check service)
-kubectl get pods -n default (to check the pods)
-```
+    ```bash
+    python3 eks.py
+    ```
 
-Once your pod is up and running, run the port-forward to expose the service
+23. Confirm the cluster, deployment, service, and pods:
 
-```bash
-kubectl port-forward service/<service_name> 5000:5000
-```
-![image](https://github.com/FarisDou/AWS-K8S-Docker-Flask-Cloud-App/assets/109401839/91bc52c4-cbe9-4593-8765-3a3884a12d5b)
+    ```bash
+    eksctl get cluster
+    kubectl get deployment -n default
+    kubectl get service -n default
+    kubectl get pods -n default
+    kubectl get all
+    ```
 
- Creating a EKS Cluster
-After pushing the docker image to ECR registry, we are good to go for creating a Kubernetes cluster in AWS EKS. Follow the following steps to create a EKS cluster on which we will host our Cloud-native-monitoring-application:
+24. When the pod is running, forward the service port:
 
-Go to the Search tab, type EKS and select Elastic Kubernetes services. It will open a new tab.
+    ```bash
+    kubectl port-forward service/my-flask-service 5000:5000
+    ```
 
-Select add Cluster and in the drop-down menu, click on Create. It will open the following page, add the details like Cluster name (cloud-native-cluster):
+    Expected result: http://localhost:5000/ shows the System Monitoring page with the CPU and memory gauges, now served from the pod in EKS.
 
+## What I learned
 
+- How to build a small monitoring dashboard with Flask, psutil, and Plotly.
+- How to package a Python app as a Docker image and publish it to ECR with boto3.
+- How EKS clusters and node groups depend on IAM roles and trust relationships.
+- How to create Kubernetes deployments and services from Python instead of YAML.
 
-In the above image, you can see Cluster service role is set to myAmazonEKSRole, in your case, it will show noting. To create a role, search for IAM in the search tab and navigate to Roles tab.
+## Next steps / cleanup
 
-In the Roles tab, Click on Create role and Select AWS services in the Trusted Entity type and Select EKS in service type, under use case, go for EKS-Cluster to create a custom policy like specified below:
-
-
-
-After that click on next and give it a name (eg: myAmazonEKSRole) and go back to EKS page.
-
-Now if you refresh the role drop down menu, you can see the role created by you. Select the role and keep the rest as default and click next.
-
-In Specifying Networking settings, select your default VPC, subnets and security groups, make sure to remove any private subnets which you created and ensure that the security group you selected have port 5000 open.
-
-
-
-After then leave the rest of the configurations as default and Review and create the Cluster.
-
-The cluster will take up to 10-15 mins for creation. After the cluster is fully created, we will create Node group for our nodes.
-
-💡 Creating Node Groups
-Once the Cluster state is active, we will go to compute tab under our cloud-native-cluster and in the Node group section, Click on Add Node Group. It will Give you the following prompt in (enter details like node group and IAM role for the node).
-
-
-In the above Image, you can see a Node IAM Role, just like before, you need to create an Eks role with the following permissions attached:
-
-
-Remember to change the trusted relationship in the above image with the following JSON, otherwise your role will not show up:
-
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "Service": "ec2.amazonaws.com"
-            },
-            "Action": "sts:AssumeRole",
-            "Condition": {}
-        }
-    ]
-}
-```
-
-After creating the role, refresh the drop-down menu and select your role. Leave the rest as default and click Next.
-
-In Set compute and scaling configuration, select t2.micro as instance type and leave the rest as default.
-
-
-
-Click on next, leave the default configuration as is it and Click on create the node group.
-
-💡 Creating Kubernetes Deployments and Services
-After initializing node group and cluster, we need to write the deployment and service file for the project to be deployed on cloud-native-cluster. Follow the next steps to create the yaml files:
-
-In the project directory, create a file named `eks.py` and put the following content in it:
-
-```python
- #create deployment and service
- from kubernetes import client, config
-
- # Load Kubernetes configuration
- config.load_kube_config()
-
- # Create a Kubernetes API client
- api_client = client.ApiClient()
-
- # Define the deployment
- deployment = client.V1Deployment(
-     metadata=client.V1ObjectMeta(name="my-flask-app"),
-     spec=client.V1DeploymentSpec(
-         replicas=1,
-         selector=client.V1LabelSelector(
-             match_labels={"app": "my-flask-app"}
-         ),
-         template=client.V1PodTemplateSpec(
-             metadata=client.V1ObjectMeta(
-                 labels={"app": "my-flask-app"}
-             ),
-             spec=client.V1PodSpec(
-                 containers=[
-                     client.V1Container(
-                         name="my-flask-container",
-                         image="<Your-Image-URI>",
-                         ports=[client.V1ContainerPort(container_port=5000)]
-                     )
-                 ]
-             )
-         )
-     )
- )
-
- # Create the deployment
- api_instance = client.AppsV1Api(api_client)
- api_instance.create_namespaced_deployment(
-     namespace="default",
-     body=deployment
- )
-
- # Define the service
- service = client.V1Service(
-     metadata=client.V1ObjectMeta(name="my-flask-service"),
-     spec=client.V1ServiceSpec(
-         selector={"app": "my-flask-app"},
-         ports=[client.V1ServicePort(port=5000)]
-     )
- )
-
- # Create the service
- api_instance = client.CoreV1Api(api_client)
- api_instance.create_namespaced_service(
-     namespace="default",
-     body=service
- )
-```
-
-In the above code, make sure to replace `<Your-Image-URI>` with the actual URI of the Docker image you pushed to the ECR registry.
-
-After creating that file, open a terminal and run the following command to connect `kubectl` to the cloud-native-cluster:
-
-```
-aws eks update-kubeconfig --name cloud-native-cluster
-```
-
-To apply the deployment and services created in `eks.py`, run:
-
-```
-python3 eks.py
-```
-
-After running the file, you can see the pods, deployments, and services running in your cluster with:
-
-```
-kubectl get all
-```
-
-It will give the following output:
-
-
-
-To expose the service to the outside world, we need to use the following command:
-
-kubectl port-forward service/my-flask-service 5000:5000
-
-After exposing the service to the outside world, we can go to our localhost:5000 and you can see your application running which is actually running inside a Kubernetes cluster.
+- Delete the node group, then the EKS cluster, and the ECR repository when you are done to avoid charges.
