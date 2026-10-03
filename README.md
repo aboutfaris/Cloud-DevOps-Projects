@@ -168,7 +168,7 @@ deployment = client.V1Deployment(
                 containers=[
                     client.V1Container(
                         name="my-flask-container",
-                        image="568373317874.dkr.ecr.us-east-1.amazonaws.com/my-cloud-native-repo:latest",
+                        image="<your-aws-account-id>.dkr.ecr.us-east-1.amazonaws.com/my-cloud-native-repo:latest",
                         ports=[client.V1ContainerPort(container_port=5000)]
                     )
                 ]
@@ -257,11 +257,9 @@ Once the Cluster state is active, we will go to compute tab under our cloud-nati
 In the above Image, you can see a Node IAM Role, just like before, you need to create an Eks role with the following permissions attached:
 
 
-Remember to change the trusted relationship in the above image with the following Json, otherwise your role will not show up:
+Remember to change the trusted relationship in the above image with the following JSON, otherwise your role will not show up:
 
-COPY
-
-COPY
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -275,7 +273,9 @@ COPY
         }
     ]
 }
-After creating the role, refresh the drop-down menu and select your role. Leave the rest and default and click on Next.
+```
+
+After creating the role, refresh the drop-down menu and select your role. Leave the rest as default and click Next.
 
 In Set compute and scaling configuration, select t2.micro as instance type and leave the rest as default.
 
@@ -286,12 +286,9 @@ Click on next, leave the default configuration as is it and Click on create the 
 💡 Creating Kubernetes Deployments and Services
 After initializing node group and cluster, we need to write the deployment and service file for the project to be deployed on cloud-native-cluster. Follow the next steps to create the yaml files:
 
-In the project directory, create a file named eks.py and put the following content in it:
+In the project directory, create a file named `eks.py` and put the following content in it:
 
-
-COPY
-
-COPY
+```python
  #create deployment and service
  from kubernetes import client, config
 
@@ -348,26 +345,28 @@ COPY
      namespace="default",
      body=service
  )
-In the above code, make sure to replace <Your-Image-URI> with the actual URI of the docker image you pushed on the ECR registry.
+```
 
-After creating that Open terminal and run the following command to connect your kubectl with the cloud-native-cluster:
+In the above code, make sure to replace `<Your-Image-URI>` with the actual URI of the Docker image you pushed to the ECR registry.
 
+After creating that file, open a terminal and run the following command to connect `kubectl` to the cloud-native-cluster:
 
-COPY
+```
+aws eks update-kubeconfig --name cloud-native-cluster
+```
 
-COPY
- aws eks update-kubeconfig --name cloud-native-cluster
-To apply the deployment and services, we created in the eks.py, run the file with the following command:
+To apply the deployment and services created in `eks.py`, run:
 
+```
+python3 eks.py
+```
 
-COPY
+After running the file, you can see the pods, deployments, and services running in your cluster with:
 
-COPY
- python3 eks.py
-After running the file, You can see the pods, deployments and services running into your cluster with the following command:
-
-
+```
 kubectl get all
+```
+
 It will give the following output:
 
 
