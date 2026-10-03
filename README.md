@@ -1,7 +1,6 @@
 # Deploy Infrastructure to Azure with Terraform
 
-Video Implentation:
-https://youtube.com/live/WPvUa9-Txt8?feature=share
+[Video Walkthrough](https://youtube.com/live/WPvUa9-Txt8?feature=share)
 
 
 ---
@@ -206,9 +205,9 @@ resource "azurerm_storage_blob" "tfstatecon" {
 
 ### Conclusion
 
-Overall this project helped me understand the fundamentals of terraform and will be used in the future to automate previous projects. 
-I really enjoy creating this project, however I had a lot of issues with the Azure CLI configuration to my IDE that took up 50% of my troubleshooting time. 
-A quicker way was to do terraform fmt to properly format the terraform files.Afterwards, use terraform validate to ensure there are no problems in the files. 
-I decided to upload the files to Azure CLI on the website rather than my IDEand initialise, plan, deploy my infrastructure on the Azure CLI.
-In the future I would like to fix my configuration between the IDE and CLI. 
+Overall, this project helped me understand the fundamentals of Terraform, and I plan to use it in the future to automate previous projects.
+
+I enjoyed building this project, though I had a lot of issues getting the Azure CLI configured with my IDE, which took up about half of my troubleshooting time. A quicker path was to run `terraform fmt` to properly format the Terraform files, then `terraform validate` to catch any issues. I ended up running Azure CLI commands directly in the browser-based Cloud Shell rather than my IDE, and used that to initialize, plan, and deploy my infrastructure.
+
+In the future, I'd like to fix the configuration issue between my IDE and the CLI.
 
