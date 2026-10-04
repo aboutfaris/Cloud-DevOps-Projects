@@ -1,4 +1,4 @@
-# AWS K8S Docker Flask Cloud App
+# Native Cloud Monitoring Application with Docker, Kubernetes, AWS
 
 Build a Python system-monitoring app with Flask and psutil, containerize it with Docker, push the image to Amazon ECR, and run it on an Amazon EKS cluster using the Kubernetes Python client.
 
@@ -19,10 +19,11 @@ Build a Python system-monitoring app with Flask and psutil, containerize it with
 
 ### Part 1: Run the Flask app locally
 
-1. Clone the repository:
+1. Clone the repository and open this project's folder:
 
    ```bash
-   git clone <repository_url>
+   git clone https://github.com/aboutfaris/Cloud-DevOps-Projects.git
+   cd Cloud-DevOps-Projects/01-native-cloud-monitoring-app-docker-kubernetes-aws
    ```
 
 2. Install the dependencies:
