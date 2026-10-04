@@ -2,6 +2,10 @@
 
 Follow-along projects for containerizing, deploying, and automating cloud workloads on AWS and Azure. Each folder is a self-contained guide with its own steps and code.
 
+![Cloud DevOps architecture](assets/architecture.png)
+
+The diagram shows what each guide builds: 01 on AWS (Docker, ECR, EKS) and 02 on Azure (Terraform, Storage, remote state).
+
 | Section | What you'll build | Folder |
 | --- | --- | --- |
 | Native Cloud Monitoring Application with Docker, Kubernetes, AWS | A Flask system-monitoring app, containerized with Docker, pushed to Amazon ECR, and deployed to Amazon EKS from Python | [01-native-cloud-monitoring-app-docker-kubernetes-aws](./01-native-cloud-monitoring-app-docker-kubernetes-aws/) |
