@@ -14,3 +14,7 @@ The diagram shows what each guide builds: 01 on AWS (Docker, ECR, EKS) and 02 on
 ## How to use
 
 Open a folder and follow its README from top to bottom. The projects are independent, so you can start with either one. Both create billable cloud resources, so run each guide's cleanup steps when you finish.
+
+## License
+
+Code and scripts in this repository are licensed under the MIT License (see [LICENSE](LICENSE)). Written guides and diagrams are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Third-party material keeps its original license and is excluded from both.
