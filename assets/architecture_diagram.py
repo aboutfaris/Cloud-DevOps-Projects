@@ -8,7 +8,7 @@ Adapted from the reference implementation for AWS architecture diagrams
     01 AWS (official AWS icons) and 02 Microsoft Azure (official Azure icons).
   - Workstation tools use their vendor icons (Flask, Docker, Python, Terraform).
 
-Run:  /tmp/c340_diag_venv/bin/python architecture_diagram.py <out-prefix>
+Run:  /tmp/diagram_venv/bin/python architecture_diagram.py <out-prefix>
 It writes <out-prefix>.svg and <out-prefix>.png (rendered at 2x) and must print
 "layout problems: none".
 """
@@ -235,7 +235,8 @@ azure_tile(CX0, L2T, "eastus")
 group(GX0, 602, GX1, 745, "Website resources (main.tf)")
 group(GX0, 765, GX1, 905, "Remote state backend")
 
-node("tf", "onprem/iac/terraform.png", WS[0], RC, "Terraform", "plan, apply, destroy")
+# The Terraform icon already carries its wordmark, so only the role line is labeled.
+node("tf", "onprem/iac/terraform.png", WS[0], RC, "plan, apply, destroy")
 node("cli", "azure/other/azure-cloud-shell.png", WS[1], RD, "Azure CLI", "or Cloud Shell")
 node("rg1", "azure/general/resourcegroups.png", SL[0], RC, "Resource group", "website")
 node("sa1", "azure/storage/storage-accounts.png", SL[1], RC, "Storage account",
