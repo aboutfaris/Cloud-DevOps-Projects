@@ -1,4 +1,4 @@
-# Deploy Infrastructure to Azure with Terraform
+# Deploy Infrastructure and Assets to Azure using Terraform
 
 Deploy a static "Hello World" website to Azure Storage with Terraform, store the Terraform state in a remote Azure backend, and clean up the code with variables. [Video walkthrough](https://youtube.com/live/WPvUa9-Txt8?feature=share)
 
