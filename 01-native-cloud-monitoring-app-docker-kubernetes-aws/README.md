@@ -2,6 +2,10 @@
 
 Build a Python system-monitoring app with Flask and psutil, containerize it with Docker, push the image to Amazon ECR, and run it on an Amazon EKS cluster using the Kubernetes Python client.
 
+![Native cloud monitoring app architecture](assets/architecture.png)
+
+The diagram shows the path this guide builds: Docker image to Amazon ECR, then a pod on Amazon EKS, with ECR and the Kubernetes objects created from Python.
+
 ## What you'll use
 
 - Python 3 with Flask, psutil, Plotly, and boto3 (see `requirements.txt`)

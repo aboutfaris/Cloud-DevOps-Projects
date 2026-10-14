@@ -2,6 +2,10 @@
 
 Deploy a static "Hello World" website to Azure Storage with Terraform, store the Terraform state in a remote Azure backend, and clean up the code with variables. [Video walkthrough](https://youtube.com/live/WPvUa9-Txt8?feature=share)
 
+![Terraform on Azure architecture](assets/architecture.png)
+
+The diagram shows what this guide builds: Terraform creates the static website in Azure Storage, and the Azure CLI creates the remote backend that holds the state file.
+
 ## What you'll use
 
 - Windows (64-bit) with Command Prompt and PowerShell
